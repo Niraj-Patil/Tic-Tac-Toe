@@ -1,0 +1,17 @@
+{
+  "name": "Neon Arena Tic-Tac-Toe",
+  "short_name": "Neon Tic-Tac-Toe",
+  "description": "Tic-Tac-Toe with local play, AI and online rooms.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#101326",
+  "theme_color": "#101326",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

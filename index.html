@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101326">
+<meta name="description" content="A modern Tic-Tac-Toe game with local play, AI difficulty levels, and online rooms.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Tic-Tac-Toe — Neon Arena</title>
+<style>
+:root{--bg:#101326;--panel:#191d35;--panel2:#202642;--text:#f5f7ff;--muted:#a3accb;--cyan:#53e5f5;--pink:#ff6ab5;--gold:#ffd166;--line:#303858;--good:#7cf7b0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 12% 0%,#24305c 0,transparent 42%),radial-gradient(ellipse at 95% 80%,#392047 0,transparent 38%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:20px 14px 32px}
+button,input{font:inherit}
+.app{width:min(100%,510px)}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin:2px 0 22px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:43px;height:43px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),#8376ff);display:grid;place-items:center;color:#11152a;font-weight:1000;font-size:22px;box-shadow:0 8px 30px #53e5f52c}
+.brand h1{font-size:18px;margin:0;letter-spacing:.3px}.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:1.8px;margin-top:2px}
+.pill{font-size:11px;color:var(--good);border:1px solid #7cf7b044;background:#7cf7b012;padding:7px 10px;border-radius:99px}
+.hero{text-align:center;margin:0 0 20px}
+.eyebrow{font-size:11px;letter-spacing:3px;color:var(--cyan);font-weight:800}
+.hero h2{font-size:clamp(28px,7vw,40px);line-height:1.08;margin:9px 0 8px;letter-spacing:-1.5px}
+.hero p{margin:0;color:var(--muted);font-size:14px}
+.panel{background:linear-gradient(145deg,#1b2039ed,#15192ded);border:1px solid #ffffff12;border-radius:24px;padding:17px;box-shadow:0 18px 60px #00000024}
+.mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:17px}
+.tab{border:1px solid var(--line);border-radius:13px;background:#11162b;color:var(--muted);padding:11px 4px;font-size:12px;font-weight:750;cursor:pointer;transition:.18s}
+.tab span{display:block;font-size:17px;margin-bottom:5px}
+.tab.active{color:var(--text);border-color:#53e5f5a6;background:linear-gradient(145deg,#53e5f51a,#8376ff17);box-shadow:inset 0 0 0 1px #53e5f51b}
+.options{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 1px 15px;min-height:38px}
+.option-label{color:var(--muted);font-size:12px}
+.segment{display:flex;background:#101428;padding:4px;border:1px solid var(--line);border-radius:11px;gap:3px}
+.segment button{border:0;background:transparent;color:var(--muted);padding:7px 10px;border-radius:8px;font-size:11px;cursor:pointer}
+.segment button.active{background:#303a5f;color:white}
+.status{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 13px;background:#11162a;border:1px solid #ffffff0d;border-radius:14px;margin-bottom:14px}
+.turn{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:750}
+.turn-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#53e5f518;color:var(--cyan);font-size:20px;font-weight:900}
+.status small{display:block;color:var(--muted);font-size:10px;font-weight:500;margin-top:2px}
+.badge{font-size:10px;padding:6px 8px;border-radius:99px;background:#ffffff0a;color:var(--muted);white-space:nowrap}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;aspect-ratio:1;margin-bottom:15px}
+.cell{border:1px solid #ffffff12;border-radius:18px;background:linear-gradient(145deg,#242b4a,#1b2039);display:grid;place-items:center;font-size:clamp(42px,13vw,68px);font-weight:900;cursor:pointer;transition:transform .12s,border-color .12s,background .12s;min-width:0;min-height:0}
+.cell:active{transform:scale(.96)}.cell:disabled{cursor:default}
+.cell.x{color:var(--cyan);text-shadow:0 0 24px #53e5f545}.cell.o{color:var(--pink);text-shadow:0 0 24px #ff6ab545}
+.cell.win{background:linear-gradient(145deg,#1c4c55,#242b4a);border-color:#7cf7b0;box-shadow:0 0 22px #7cf7b020}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn{border:1px solid var(--line);border-radius:13px;padding:12px 10px;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+.btn.primary{background:linear-gradient(100deg,var(--cyan),#9b91ff);color:#101326;border:0}
+.btn.secondary{background:#202642;color:var(--text)}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.98)}
+.scoreboard{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.score{background:#11162a;border:1px solid #ffffff0b;border-radius:14px;padding:12px;text-align:center}
+.score strong{display:block;font-size:22px}.score span{display:block;color:var(--muted);font-size:10px;margin-top:3px;letter-spacing:.5px}
+.score.x strong{color:var(--cyan)}.score.o strong{color:var(--pink)}.score.draw strong{color:var(--gold)}
+.online-box{display:none;background:#11162a;border:1px solid var(--line);padding:13px;border-radius:14px;margin-bottom:14px}
+.online-box.show{display:block}
+.online-box p{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+.online-row{display:flex;gap:8px}
+.online-row input{width:100%;min-width:0;background:#1d2340;border:1px solid #394366;border-radius:10px;padding:10px;color:white;outline:none}
+.online-row input:focus{border-color:var(--cyan)}
+.small-btn{border:0;border-radius:10px;background:#2b365a;color:white;font-weight:800;padding:9px 12px;cursor:pointer}
+.connection{font-size:11px;color:var(--gold);margin-top:9px;min-height:15px}
+.footer{text-align:center;color:#7e88aa;font-size:11px;line-height:1.6;margin:15px 8px 0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#f5f7ff;color:#101326;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:800;box-shadow:0 10px 35px #0005;transition:.25s;z-index:10;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:600px){body{padding-top:32px}.panel{padding:20px}.cell{border-radius:21px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">X<span style="color:#fff">O</span></div><div><h1>NEON ARENA</h1><small>TIC-TAC-TOE</small></div></div>
+    <div class="pill">● READY TO PLAY</div>
+  </header>
+  <section class="hero"><div class="eyebrow">THINK. PLAY. WIN.</div><h2>Make your move.</h2><p>Classic strategy. A fresh new arena.</p></section>
+  <section class="panel">
+    <nav class="mode-tabs" aria-label="Game modes">
+      <button class="tab active" data-mode="local"><span>⚔️</span>2 Players</button>
+      <button class="tab" data-mode="ai"><span>🤖</span>Vs Computer</button>
+      <button class="tab" data-mode="online"><span>🌐</span>Online</button>
+    </nav>
+    <div class="options" id="difficultyRow"><span class="option-label">COMPUTER LEVEL</span><div class="segment"><button data-level="Easy">Easy</button><button data-level="Medium" class="active">Medium</button><button data-level="Hard">Hard</button></div></div>
+    <div class="online-box" id="onlineBox">
+      <p>Host a room and share your room ID, or join a friend using their ID. Both players need internet access.</p>
+      <div class="online-row"><button class="small-btn" id="hostBtn">Host room</button><input id="roomInput" placeholder="Friend's room ID" autocomplete="off"><button class="small-btn" id="joinBtn">Join</button></div>
+      <div class="connection" id="connectionStatus">Online connection is idle.</div>
+      <div class="online-row" style="margin-top:8px"><input id="myRoomId" readonly placeholder="Your room ID appears here"><button class="small-btn" id="copyBtn">Copy ID</button></div>
+    </div>
+    <div class="status"><div class="turn"><div class="turn-mark" id="turnMark">X</div><div><div id="statusText">Player X's turn</div><small id="statusSub">Your move starts the game</small></div></div><div class="badge" id="modeBadge">LOCAL MATCH</div></div>
+    <div class="board" id="board" aria-label="Tic-Tac-Toe board"></div>
+    <div class="actions"><button class="btn primary" id="newGame">↻ New round</button><button class="btn secondary" id="resetScore">Reset scores</button></div>
+    <div class="scoreboard">
+      <div class="score x"><strong id="scoreX">0</strong><span id="labelX">PLAYER X</span></div>
+      <div class="score draw"><strong id="scoreD">0</strong><span>DRAWS</span></div>
+      <div class="score o"><strong id="scoreO">0</strong><span id="labelO">PLAYER O</span></div>
+    </div>
+  </section>
+  <div class="footer">Made for quick matches and big-brain moves.<br>Online play uses a third-party peer connection service.</div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const boardEl = $('#board');
+let cells = [], mode='local', level='Medium', turn='X', ended=false;
+let scores={X:0,O:0,D:0}, winning=[];
+let peer=null, conn=null, myMark=null, onlineReady=false, isHost=false, onlineBusy=false;
+const initialStatus = () => {
+  $('#turnMark').textContent = turn;
+  $('#turnMark').style.color = turn==='X' ? 'var(--cyan)' : 'var(--pink)';
+  $('#statusText').textContent = ended ? $('#statusText').textContent : (mode==='ai' ? (turn==='X'?'Your turn':'Computer is thinking') : mode==='online' ? (onlineReady ? (turn===myMark?'Your turn':'Opponent’s turn') : 'Connect to play') : `Player ${turn}'s turn`);
+  $('#statusSub').textContent = ended ? 'Round complete' : mode==='ai' ? `You are X · ${level} AI` : mode==='online' ? (onlineReady?'Room connected':'Start or join a room') : 'Line up three marks to win';
+};
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function makeBoard(){boardEl.innerHTML='';cells=[];for(let i=0;i<9;i++){let b=document.createElement('button');b.className='cell';b.setAttribute('aria-label',`Square ${i+1}`);b.innerHTML='<span></span>';b.addEventListener('click',()=>move(i));boardEl.appendChild(b);cells.push(b)}}
+function paint(){cells.forEach((b,i)=>{b.querySelector('span').textContent=(board[i]==='X'||board[i]==='O')?board[i]:'';b.classList.toggle('x',board[i]==='X');b.classList.toggle('o',board[i]==='O');b.classList.toggle('win',winning.includes(i));b.disabled=ended||board[i]==='X'||board[i]==='O'||(mode==='ai'&&turn==='O')||(mode==='online'&&(!onlineReady||turn!==myMark));});$('#scoreX').textContent=scores.X;$('#scoreO').textContent=scores.O;$('#scoreD').textContent=scores.D;initialStatus()}
+let board=Array(9).fill('');
+const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function winLine(b){for(const l of lines)if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[1]]===b[l[2]])return l;return null}
+function finishIfNeeded(){const line=winLine(board);if(line){ended=true;winning=line;scores[board[line[0]]]++;$('#statusText').textContent=`${board[line[0]]} wins!`;$('#statusSub').textContent='Beautifully played';toast(`${board[line[0]]} wins!`);paint();return true}if(board.every(Boolean)){ended=true;scores.D++;$('#statusText').textContent="It's a draw";$('#statusSub').textContent='A close match';toast("It's a draw!");paint();return true}return false}
+function send(data){if(conn&&conn.open){try{conn.send(data)}catch(e){}}}
+function applyMove(i,mark,remote=false){if(ended||board[i])return false;board[i]=mark;turn=mark==='X'?'O':'X';const finished=finishIfNeeded();paint();if(!finished&&mode==='online'&&!remote)send({type:'move',i,mark});return true}
+function move(i){if(ended||board[i])return;if(mode==='online'&&(!onlineReady||turn!==myMark))return;if(mode==='ai'&&turn==='O')return;const mark=mode==='online'?myMark:turn;if(!applyMove(i,mark))return;if(mode==='ai'&&!ended&&turn==='O')setTimeout(aiMove,420)}
+function resetRound(sendRemote=true){board=Array(9).fill('');turn='X';ended=false;winning=[];$('#statusText').textContent='Player X’s turn';$('#statusSub').textContent='Line up three marks to win';paint();if(mode==='online'&&sendRemote&&onlineReady)send({type:'reset'})}
+function setMode(next){if(mode==='online')disconnectOnline();mode=next;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));$('#difficultyRow').style.display=mode==='ai'?'flex':'none';$('#onlineBox').classList.toggle('show',mode==='online');$('#modeBadge').textContent=mode==='ai'?'VS COMPUTER':mode==='online'?'ONLINE MATCH':'LOCAL MATCH';$('#labelX').textContent=mode==='ai'?'YOU (X)':mode==='online'?'HOST (X)':'PLAYER X';$('#labelO').textContent=mode==='ai'?'AI (O)':mode==='online'?'GUEST (O)':'PLAYER O';scores={X:0,O:0,D:0};resetRound(false);paint()}
+function minimax(b,isAi,depth){const line=winLine(b);if(line){const w=b[line[0]];return w==='O'?10-depth:depth-10}if(b.every(Boolean))return 0;let best=isAi?-Infinity:Infinity;for(let i=0;i<9;i++)if(!b[i]){b[i]=isAi?'O':'X';const s=minimax(b,!isAi,depth+1);b[i]='';best=isAi?Math.max(best,s):Math.min(best,s)}return best}
+function aiMove(){if(mode!=='ai'||ended||turn!=='O')return;let empty=board.map((v,i)=>v?null:i).filter(v=>v!==null);if(!empty.length)return;let choice=empty[0];if(level==='Easy'){choice=empty[Math.floor(Math.random()*empty.length)]}else if(level==='Medium'){let found=false;for(const i of empty){board[i]='O';if(winLine(board)){choice=i;found=true}board[i]=''}if(!found){for(const i of empty){board[i]='X';if(winLine(board)){choice=i;found=true}board[i]=''} }if(!found&&empty.includes(4))choice=4;else if(!found)choice=empty[Math.floor(Math.random()*empty.length)]}else{let best=-Infinity;for(const i of empty){board[i]='O';let s=minimax(board,false,0);board[i]='';if(s>best){best=s;choice=i}}}applyMove(choice,'O')}
+function disconnectOnline(){onlineReady=false;onlineBusy=false;if(conn){try{conn.close()}catch(e){}conn=null}if(peer){try{peer.destroy()}catch(e){}peer=null}$('#connectionStatus').textContent='Online connection is idle.';$('#myRoomId').value=''}
+function setupConn(c){conn=c;conn.on('open',()=>{onlineReady=true;$('#connectionStatus').textContent='Connected! You are '+myMark+'.';toast('Online match connected');resetRound(false);paint()});conn.on('data',data=>{if(!data||typeof data!=='object')return;if(data.type==='move'&&Number.isInteger(data.i)&&data.i>=0&&data.i<9){if(!ended&&!board[data.i])applyMove(data.i,data.mark,true)}else if(data.type==='reset'){resetRound(false)} });conn.on('close',()=>{onlineReady=false;$('#connectionStatus').textContent='Opponent disconnected.';paint()});conn.on('error',()=>{onlineReady=false;$('#connectionStatus').textContent='Connection issue. Check the room ID and internet.';paint()})}
+function hostRoom(){if(typeof Peer==='undefined'){toast('Online library did not load. Check internet.');return}disconnectOnline();mode='online';isHost=true;myMark='X';$('#connectionStatus').textContent='Creating room…';peer=new Peer();peer.on('open',id=>{$('#myRoomId').value=id;$('#connectionStatus').textContent='Room ready. Share your ID with a friend.';toast('Room created')});peer.on('connection',c=>{if(conn){c.close();return}setupConn(c)});peer.on('error',e=>{$('#connectionStatus').textContent='Could not create room: '+e.type});}
+function joinRoom(){const id=$('#roomInput').value.trim();if(!id){toast('Enter your friend’s room ID');return}if(typeof Peer==='undefined'){toast('Online library did not load. Check internet.');return}disconnectOnline();mode='online';isHost=false;myMark='O';$('#connectionStatus').textContent='Connecting to host…';peer=new Peer();peer.on('open',()=>{const c=peer.connect(id,{reliable:true});setupConn(c)});peer.on('error',e=>{$('#connectionStatus').textContent='Could not connect: '+e.type})}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+document.querySelectorAll('[data-level]').forEach(b=>b.addEventListener('click',()=>{level=b.dataset.level;document.querySelectorAll('[data-level]').forEach(x=>x.classList.toggle('active',x===b));if(mode==='ai')resetRound(false)}));
+$('#newGame').addEventListener('click',()=>resetRound(true));
+$('#resetScore').addEventListener('click',()=>{scores={X:0,O:0,D:0};resetRound(true)});
+$('#hostBtn').addEventListener('click',hostRoom);$('#joinBtn').addEventListener('click',joinRoom);
+$('#copyBtn').addEventListener('click',async()=>{const id=$('#myRoomId').value;if(!id){toast('Host a room first');return}try{await navigator.clipboard.writeText(id);toast('Room ID copied')}catch(e){$('#myRoomId').select();toast('Select and copy the room ID')}});
+makeBoard();setMode('local');
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
